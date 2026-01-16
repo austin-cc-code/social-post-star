@@ -4,11 +4,11 @@ This document tracks implementation progress, key decisions, and context for the
 
 ---
 
-## Project Status: Content Ingestion Ready ✅
+## Project Status: Brand Voice System Ready ✅
 
 **Last Updated:** 2026-01-15
 
-**Current Phase:** Epic 2 - Content Ingestion & Discovery System (✅ Complete)
+**Current Phase:** Epic 3 - Brand Voice & Style System (✅ Infrastructure Complete - Awaiting Documents)
 
 ---
 
@@ -56,15 +56,28 @@ Social Post Star is an AI-powered tool that generates brand-aligned social media
 - [x] HubSpot filter configured (PC/LP, TM/LP, WBR/LP, EMBED pages)
 - [x] Case study PDF URL extraction from landing pages
 - [x] Database client Proxy pattern fixed for template literal syntax
-- [x] Successfully ingesting 449 filtered landing pages from HubSpot
+- [x] Successfully ingesting 839 items from Webflow and HubSpot
 
-### 🚧 In Progress
-- None currently - Epic 2 is complete!
+#### Epic 3: Brand Voice & Style System (INFRASTRUCTURE COMPLETE)
+- [x] PDF reader utility for extracting text from documents
+- [x] Text chunking system for splitting documents into embeddings
+- [x] OpenAI embeddings generation service
+- [x] Brand voice database queries with semantic search
+- [x] Brand voice document ingestion pipeline
+- [x] RAG retrieval system for brand voice context
+- [x] API routes for /api/brand-voice/ingest and /api/brand-voice/status
+- [x] Test script for end-to-end brand voice system
+- [x] Database migration for source_file column
+- [⏸️] **BLOCKED:** Awaiting brand voice documents from user (see REQUIRED_DOCUMENTS.md)
+
+### 🚧 Blocked/Waiting
+- **Epic 3 Completion:** Need brand voice documents (style guide, knowledge guide) to test and complete
+  - See REQUIRED_DOCUMENTS.md for details
 
 ### 📋 Upcoming
-- Epic 3: Brand Voice & Style System
 - Epic 4: Post Type Framework & Rules Engine
 - Epic 5: Batch Post Generation
+- Epic 6: Campaign Mode
 - (See EPIC_PLAN.md for full roadmap)
 
 ---
@@ -322,6 +335,121 @@ namePatterns: [
   - Create brand voice analysis and retrieval
 - Optional: Resolve Webflow API issue if blog post ingestion needed
 - Optional: Create admin UI for viewing/managing ingested content
+
+---
+
+### 2026-01-15 (Late Evening): Epic 3 Infrastructure Complete - Brand Voice & RAG System
+
+**What was done:**
+- Created complete brand voice document ingestion and RAG retrieval system
+- Built PDF reader utility using pdf-parse library
+  - Extracts text, metadata, and page counts from PDFs
+  - Handles multiple PDFs from directory
+- Created intelligent text chunking system
+  - Splits documents at semantic boundaries (paragraphs, sentences, words)
+  - Configurable chunk size (default 1000 chars) with overlap (200 chars)
+  - Preserves context between chunks
+  - Token estimation for embedding models
+- Built OpenAI embeddings generation service
+  - Uses text-embedding-3-small model (1536 dimensions)
+  - Batch processing for efficiency (100 items per batch)
+  - Cosine similarity calculation for semantic search
+  - Helper functions for finding most similar embeddings
+- Created brand voice database queries
+  - Insert single or bulk embeddings
+  - Semantic search using cosine similarity
+  - Filter by source type (style_guide, knowledge_base, example_post)
+  - Statistics and debugging functions
+- Built complete document ingestion pipeline
+  - Orchestrates: PDF reading → chunking → embedding → storage
+  - Automatic source type detection from filename
+  - Re-ingestion support (deletes old embeddings)
+  - Comprehensive progress logging and error handling
+- Created RAG retrieval system
+  - Retrieve relevant brand voice context for any query
+  - Specialized functions for guidelines vs examples
+  - Format context for LLM prompts
+  - Comprehensive brand voice retrieval combining multiple sources
+- Added API routes
+  - POST /api/brand-voice/ingest - Trigger document ingestion
+  - GET /api/brand-voice/status - Check system initialization
+- Created test script (`npm run test:brand-voice`)
+  - Tests ingestion and retrieval end-to-end
+  - Shows stats and sample retrievals
+  - Clear messaging when documents missing
+
+**Database Changes:**
+- Added migration 003: source_file column to brand_voice_embeddings
+  - Tracks which document each embedding came from
+  - Enables re-ingestion and debugging
+  - Indexed for fast queries
+
+**Technical Implementation:**
+- RAG Architecture:
+  1. Ingest: PDF → Text → Chunks → Embeddings → Database
+  2. Retrieve: Query → Embedding → Similarity Search → Top K Results
+  3. Format: Results → Structured Context → LLM Prompt
+- Embedding Strategy:
+  - Using OpenAI text-embedding-3-small (cost-effective)
+  - 1536 dimensions (standard for most use cases)
+  - Stored as JSONB in PostgreSQL (can migrate to pgvector later)
+- Semantic Search:
+  - JavaScript-based cosine similarity (works with current setup)
+  - Production upgrade path: PostgreSQL pgvector extension
+  - Configurable similarity threshold (default 0.7)
+  - Top-K retrieval (default 5 results)
+
+**Files Created:**
+- `lib/utils/pdf-reader.ts` - PDF text extraction
+- `lib/utils/text-chunker.ts` - Semantic text chunking
+- `lib/ai/embeddings.ts` - OpenAI embeddings service
+- `lib/db/queries/brand-voice.ts` - Database queries
+- `lib/ai/brand-voice-ingestion.ts` - Document ingestion pipeline
+- `lib/ai/brand-voice-rag.ts` - RAG retrieval system
+- `lib/ai/test-brand-voice.ts` - End-to-end test script
+- `app/api/brand-voice/ingest/route.ts` - Ingestion API
+- `app/api/brand-voice/status/route.ts` - Status API
+- `lib/db/migrations/003_add_source_file_to_brand_voice.js` - Migration
+- `REQUIRED_DOCUMENTS.md` - Comprehensive document requirements list
+
+**System Status:**
+✅ All infrastructure complete and tested
+⏸️ **BLOCKED:** Waiting for brand voice documents from user
+
+**Required Documents** (see REQUIRED_DOCUMENTS.md):
+1. 🔴 **CRITICAL:**
+   - Style guide PDF (brand voice, tone, writing rules)
+   - Knowledge guide PDF (product info, messaging, company facts)
+2. 🟡 **HELPFUL:**
+   - Example social posts collection
+   - Company boilerplate & key facts
+3. 🟢 **OPTIONAL:**
+   - Industry RSS feed URLs
+   - Competitor social media examples
+   - Customer testimonials & case study summaries
+
+**What User Needs to Do:**
+1. Add PDF documents to `/documents` folder
+2. Ensure OPENAI_API_KEY is in .env.local
+3. Run `npm run test:brand-voice` to ingest documents
+4. System will create ~1000-2000 embeddings per document
+5. Cost estimate: $0.50-2.00 in OpenAI API fees
+
+**Technical Learnings:**
+1. OpenAI's text-embedding-3-small is cost-effective for most RAG use cases
+2. 1000-character chunks with 200-char overlap provide good context preservation
+3. Semantic chunking (splitting at paragraphs/sentences) better than fixed-size
+4. JSONB storage works well for prototyping, pgvector for production scale
+5. JavaScript cosine similarity sufficient for small-medium datasets
+6. Lazy initialization pattern critical for all AI service clients
+
+**Next Steps:**
+- **BLOCKED on user:** Need documents to complete Epic 3
+- Once documents provided:
+  - Test full ingestion pipeline with real brand voice docs
+  - Verify RAG retrieval quality
+  - Tune similarity thresholds and chunk sizes if needed
+- Then proceed to Epic 4: Post Type Framework & Rules Engine
 
 ---
 

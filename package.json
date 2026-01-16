@@ -15,7 +15,8 @@
     "db:migrate:down": "node lib/db/migrations/rollback.js",
     "db:seed": "node lib/db/seed.js",
     "type-check": "tsc --noEmit",
-    "test:content-ingestion": "tsx lib/db/test-content-ingestion.ts"
+    "test:content-ingestion": "tsx lib/db/test-content-ingestion.ts",
+    "test:brand-voice": "tsx lib/ai/test-brand-voice.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
