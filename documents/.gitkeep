@@ -1,0 +1,2 @@
+# This file ensures the documents folder is tracked by git
+# Actual document files will be ignored by .gitignore

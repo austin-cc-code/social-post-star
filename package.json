@@ -6,21 +6,42 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "echo \"Tests coming soon\" && exit 0",
+    "test:watch": "echo \"Tests coming soon\" && exit 0",
+    "test:coverage": "echo \"Tests coming soon\" && exit 0",
+    "db:migrate": "node lib/db/migrations/run.js",
+    "db:migrate:create": "node lib/db/migrations/create.js",
+    "db:migrate:down": "node lib/db/migrations/rollback.js",
+    "db:seed": "node lib/db/seed.js",
+    "type-check": "tsc --noEmit",
+    "test:content-ingestion": "tsx lib/db/test-content-ingestion.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
+    "@neondatabase/serverless": "^1.0.2",
+    "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
+    "exceljs": "^4.4.0",
     "next": "16.1.2",
+    "openai": "^6.16.0",
+    "pdf-parse": "^2.4.5",
+    "pg": "^8.17.1",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "rss-parser": "^3.13.0",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.2",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
